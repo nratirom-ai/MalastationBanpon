@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Health check and connection validation
+    match /test/{testId} {
+      allow read: if true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    // Products collection: real-time synchronized across all web browsers and web app
+    match /products/{productId} {
+      allow read: if isValidId(productId);
+      allow create, update: if isValidId(productId) &&
+        incoming().keys().hasAll(['id', 'name', 'category', 'unit', 'minStock']) &&
+        incoming().id is string &&
+        incoming().name is string &&
+        incoming().minStock is number &&
+        incoming().minStock >= 0;
+      allow delete: if isValidId(productId);
+    }
+
+    // Daily counts collection: real-time counts across all devices
+    match /daily_counts/{countId} {
+      allow read: if isValidId(countId);
+      allow create, update: if isValidId(countId) &&
+        incoming().keys().hasAll(['productId', 'date', 'quantity']) &&
+        incoming().productId is string &&
+        incoming().date is string &&
+        incoming().quantity is number &&
+        incoming().quantity >= 0;
+      allow delete: if isValidId(countId);
+    }
+
+    // Settings collection (LINE notification token, preferences)
+    match /settings/{settingId} {
+      allow read, write: if isValidId(settingId);
+    }
+
+    // Stock logs & audit trail
+    match /stock_logs/{logId} {
+      allow read, write: if isValidId(logId);
+    }
+
+    // Active online presence for collaborative editing
+    match /presence/{userId} {
+      allow read, write: if isValidId(userId);
+    }
+
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

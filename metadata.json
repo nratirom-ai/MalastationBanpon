@@ -1,0 +1,6 @@
+{
+  "name": "Daily Stock Inventory & Reorder Tracker",
+  "description": "Daily stock counting, inventory threshold alerts, reorder calculations, multi-filter stocktaking, historical reporting, and Google Sheets synchronization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
